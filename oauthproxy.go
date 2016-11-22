@@ -614,6 +614,7 @@ func (p *OAuthProxy) Authenticate(rw http.ResponseWriter, req *http.Request) int
 	if p.LdapUri != "" {
 		var luser, lemail string
 		luser, lemail, err = LdapMap(p, session.Email)
+		log.Printf("Ldap lookup: %s", luser)
 		if err == nil {
 			req.Header["X-Forwarded-User"] = []string{luser}
 			req.Header["X-Forwarded-Email"] = []string{lemail}
@@ -621,6 +622,9 @@ func (p *OAuthProxy) Authenticate(rw http.ResponseWriter, req *http.Request) int
 			log.Printf("Ldap failed to map email -> uid: %s", err)
 			return http.StatusForbidden
 		}
+		log.Printf("LDAP done: %s and %s", req.Header["X-Forwarded-User"], req.Header["X-Forwarded-Email"])
+	} else {
+		log.Printf("LDAP NOT DONE: %s and %s", req.Header["X-Forwarded-User"], req.Header["X-Forwarded-Email"])
 	}
 
 	if p.PassAccessToken && session.AccessToken != "" {
